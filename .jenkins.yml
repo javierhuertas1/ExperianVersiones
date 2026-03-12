@@ -1,0 +1,72 @@
+version: 1.0.1
+global:
+  application: ascendOps
+  tech: terraform
+  language: terraform
+  jdk: 8
+
+common_build: &common_build
+  zip:
+    zipFile: glue-scripts.zip
+    sourceDir: glue_scripts
+
+common_after_build: &common_after_build
+  sonarQubeScan:
+    skip: false
+    sources: functions,glue_scripts
+    projectKey: SP-LATAM:EITS:DevSecOps:27396_Batch-Score-genericos-AscendOps
+    projectName: SP-LATAM:EITS:DevSecOps:27396_Batch-Score-genericos-AscendOps
+    projectVersion: 1.0
+    terraform.provider.aws.version: 5.55.0
+  veracodeScan:
+    skip: false
+    key: 27396-Batch Score genericos AscendOps
+    upload: trunk/modules/lambda_wrapper/.build/*.zip
+  veracodeScan:
+    skip: false
+    key: 27396-Batch Score genericos AscendOps
+    upload: glue-scripts.zip
+
+develop:
+  build: *common_build
+  after_build: *common_after_build
+  before_deploy:
+    cmd: |-
+      echo "Running before_deploy commands"
+      cp -R trunk/. develop/  
+  deploy:
+    terraform:
+      accountid: 229637605882
+      tfVersion: 1.8.0
+qa: &deployqa
+  build: *common_build
+  after_build: *common_after_build
+  before_deploy:
+    cmd: |-
+      echo "Running before_deploy commands"
+      cp -R trunk/. qa/ 
+  deploy:
+    terraform:
+      accountid: 229637605882
+      tfVersion: 1.8.0
+demo: &deploydemo
+  before_deploy:
+    cmd: |-
+      echo "Running before_deploy commands"
+      cp -R trunk/. demo/ 
+  deploy:
+    terraform:
+      accountid: 272486427612
+      tfVersion: 1.8.0
+production: &deployprod
+  before_deploy:
+    cmd: |-
+      echo "Running before_deploy commands"
+      cp -R trunk/. production/ 
+  deploy:
+    terraform:
+      accountid: 456140051001
+      tfVersion: 1.8.0
+qa_rllbck: *deployqa
+demo_rllbck: *deploydemo
+production_rllbck: *deployprod
